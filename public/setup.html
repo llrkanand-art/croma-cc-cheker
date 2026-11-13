@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Setup Bookmarklet</title>
+</head>
+<body style="background:#070d18;color:#e5e7eb;font:14px system-ui;padding:20px;max-width:600px;margin:0 auto">
+<h2 style="color:#67e8f9">Session Sync Setup</h2>
+<p style="color:#94a3b8;line-height:1.8">
+1. Neeche wale link ko long-press karke <b>Copy link address</b> karo.<br>
+2. Chrome me <b>Bookmarks → Add</b> karo, naam "Sync Croma" rakho, URL me wo paste karo.<br>
+3. <b>croma.com/cart</b> kholo (login + cart me product hona chahiye) → Bookmarks me "Sync Croma" tap karo.<br>
+4. "Session synced!" aane ke baad app khol ke START maar do.
+</p>
+<h3 style="color:#67e8f9;margin-top:16px">Apna Render URL daalo:</h3>
+<input id="srv" placeholder="https://tera-app.onrender.com" style="width:100%;padding:10px;background:#080e18;border:1px solid #334155;border-radius:8px;color:#dbeafe;font:12px monospace">
+<h3 style="color:#67e8f9;margin-top:16px">Bookmarklet (isi page pe apne URL ke saath):</h3>
+<a id="bm" href="#">Sync Croma</a>
+<input id="url" readonly onclick="this.select()" style="width:100%;margin-top:8px;padding:10px;background:#080e18;border:1px solid #334155;border-radius:8px;color:#67e8f9;font:10px monospace">
+<script>
+const code = "javascript:(function(){var t=null,c=null;var SERV='SERVURL';var o1=XMLHttpRequest.prototype.open,o2=XMLHttpRequest.prototype.setRequestHeader,o3=XMLHttpRequest.prototype.send;XMLHttpRequest.prototype.open=function(m,u){this.__m={m:m,u:String(u),h:{}};return o1.apply(this,arguments)};XMLHttpRequest.prototype.setRequestHeader=function(n,v){if(this.__m)this.__m.h[n]=v;return o2.apply(this,arguments)};XMLHttpRequest.prototype.send=function(b){var x=this;if(x.__m){try{if(x.__m.u.indexOf('/cart-modification')>-1&&JSON.parse(b||'{}').toBeAppliedCouponsList)t={url:x.__m.u,method:x.__m.m,headers:x.__m.h}}catch(e){}}x.addEventListener('load',function(){if(x.__m&&String(x.__m.u).indexOf('/carts/')>-1){try{var d=JSON.parse(x.responseText);if(d&&typeof d==='object'&&Array.isArray(d.entries))c=d}catch(e){}}});return o3.apply(this,arguments)};var i=document.querySelector('input.Coupon-input'),b=document.querySelector('button.coupon-apply-button');if(!i||!b){alert('Coupon form nahi mila — croma.com/cart pe karo');return}var st=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value').set;st.call(i,'SYNC'+Math.floor(Math.random()*900+100));i.dispatchEvent(new Event('input',{bubbles:true}));b.click();var t0=Date.now();var w=setInterval(function(){if(!t&&Date.now()-t0<20000)return;clearInterval(w);if(!t){alert('Cart request nahi mila, dobara try karo');return}fetch(SERV+'/api/session',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({template:t,cart:c,inCallResponse:localStorage.getItem('InCallResponse'),cookie:document.cookie})}).then(r=>r.json()).then(function(j){alert(j.ok?'Session synced! Ab app kholo.':'Fail: '+(j.error||''))}).catch(function(e){alert('Sync error: '+e)})},120)})()";
+function rebuild(){
+  let u = document.getElementById('srv').value.trim().replace(/\/+$/,'');
+  if(!u) return;
+  localStorage.setItem('cc_srv', u);
+  const finalCode = code.replace(/SERVURL/g, u);
+  document.getElementById('bm').setAttribute('href', finalCode);
+  document.getElementById('url').value = finalCode;
+}
+document.getElementById('srv').value = localStorage.getItem('cc_srv') || '';
+document.getElementById('srv').oninput = rebuild;
+rebuild();
+</script>
+</body>
+</html>
