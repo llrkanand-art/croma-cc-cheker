@@ -18,8 +18,9 @@ h1{font-size:20px;color:#f8fafc;margin-bottom:8px}
 .run{background:#3b82f6} .run:hover{background:#2563eb}
 .stop{background:#ef4444} .stop:hover{background:#dc2626}
 .pause{background:#f59e0b} .pause:hover{background:#d97706}
-.resume{background:#10b981} .resume:hover{background:#059669}
-textarea{width:100%;min-height:100px;background:#020617;border:1px solid #334155;border-radius:8px;color:#cbd5e1;padding:10px;font:11px monospace;outline:0}
+.button-group { display: flex; gap: 5px; align-items: center; margin-top: 10px; }
+textarea{width:100%;min-height:120px;background:#020617;border:1px solid #334155;border-radius:8px;color:#cbd5e1;padding:10px;font:11px monospace;outline:0; resize: vertical;}
+textarea:focus { border-color: #3b82f6; }
 .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px}
 .stat{background:#111827;padding:8px;border-radius:8px;text-align:center;border:1px solid #1f2937}
 .stat b{font-size:18px;color:#fff}
@@ -29,9 +30,8 @@ th{background:#1f2937;text-align:left;padding:8px;color:#94a3b8}
 td{padding:8px;border-bottom:1px solid #1f2937}
 .ok{color:#34d399} .na{color:#d97706} .err{color:#f87171}
 .status-bar{padding:8px;background:#1f2937;border-radius:8px;margin-bottom:12px;display:flex;justify-content:space-between;font-size:12px;font-weight:700}
-.json-input{background:#050c1a;color:#7ee787}
-.hidden{display:none}
-#configJson { display: none; }
+.status-msg { font-size: 11px; color: #fbbf24; margin-top: 5px;}
+#configArea { display: flex; flex-direction: column; gap: 5px; margin-bottom: 10px;}
 </style>
 </head>
 <body>
@@ -52,23 +52,27 @@ td{padding:8px;border-bottom:1px solid #1f2937}
       </div>
   </div>
   
-  <div class="sess" style="background:#0f172a;margin-top:8px">
-      <button class="btn" onclick="loadConfig()">Load Session Config</button>
-      <textarea id="configJson" placeholder='Paste JSON here:\n{\n  "cookies": [...], \n  "url": "https://.../cart-modification...", \n  "inCallResponse": "..."\n}'></textarea>
-      <div style="margin-top:5px;font-size:10px;color:#94a3b8">Format: Check console or Network tab for 'url' & 'inCallResponse'</div>
-      <div id="syncStatus" style="margin-top:5px;font-weight:700;color:#34d399;display:none">✅ Session Saved! Ready to Check.</div>
+  <!-- UPDATED CONFIG AREA -->
+  <div class="sess" id="configArea">
+      <div style="font-size: 11px; color: #61dafb; margin-bottom: 4px;">🔹 COPY & PASTE YOUR SESSION JSON HERE:</div>
+      <textarea id="configJson" placeholder='JSON Format:\n{\n  "cookies": [ ...list... ],\n  "url": "...cart-modification url...",\n  "inCallResponse": "...RSA String..."\n}'></textarea>
+      <div class="button-group">
+         <button class="btn run" style="flex: 1;" onclick="loadConfig()">✅ SAVE & SYNC SESSION</button>
+      </div>
+      <div id="syncStatus" style="font-size: 10px; margin-top:5px; color: #34d399; font-weight: bold;"></div>
   </div>
+  <!-- END CONFIG AREA -->
 </div>
 
 <div class="card">
     <h1>Coupons</h1>
-    <textarea id="codes" placeholder="CODE1&#10;CODE2&#10;SAVE500"></textarea>
-    <div style="margin-top:10px;display:flex;gap:5px;align-items:center">
+    <textarea id="codes" placeholder="CODE1&#10;CODE2&#10;SAVE500" style="height: 80px;"></textarea>
+    <div class="button-group">
         <button class="btn run" id="runBtn">START</button>
-        <button class="btn pause" id="pauseBtn">PAUSE</button>
+        <button class="btn pause" id="pauseBtn" style="display:none">PAUSE</button>
         <button class="btn stop" id="stopBtn" disabled>STOP</button>
-        <div style="margin-left:auto;font-size:11px">
-            <input type="checkbox" id="chkPause"> <label for="chkPause">Auto Pause on Error (3+)</label>
+        <div style="margin-left:auto;font-size:11px;">
+            <input type="checkbox" id="chkPause" checked> <label for="chkPause">Auto Pause (3+ Err)</label>
         </div>
     </div>
 </div>
@@ -97,37 +101,51 @@ $('codes').value = localStorage.getItem('cc_codes') || '';
 // --- SESSION HANDLING ---
 function loadConfig() {
     const txt = $('configJson').value;
-    if(!txt) { alert('Koi JSON nahi hai'); return; }
+    let config = {};
+    
+    // Try to parse simple text if they just pasted the raw array
+    // (Assuming they might paste the cookies array directly)
     try {
-        const config = JSON.parse(txt);
-        fetch('/api/session', {
-            method: 'POST',
-            headers:{'Content-Type':'application/json'},
-            body: JSON.stringify(config)
-        }).then(r=>r.json()).then(res=>{
-            if(res.ok) {
-                $('syncStatus').style.display='block';
-                $('syncStatus').innerHTML = `✅ Saved! | Cart: ${res.cartNames || 'Unknown'}`;
-                $('dot').classList.add('live');
-                $('cartName').textContent = res.cartNames || 'Session Active';
-                alert('Session Save ho gaya!');
-            } else {
-                alert('Error: ' + res.error);
-            }
-        });
-    } catch(e) { alert('JSON format ghalat hai'); }
+        if (!txt.trim().startsWith('{')) {
+           // Try to assume it's just the cookies array
+           const rawCookies = JSON.parse(txt);
+           alert("Aur cheezein (URL, InCallResponse) dalni hongi JSON me!");
+           return; 
+        }
+        config = JSON.parse(txt);
+    } catch(e) { alert('JSON Ghalat Hai. Check karo.'); return; }
+
+    if (!config.cookies || !config.url || !config.inCallResponse) {
+        alert('JSON Form Missing: cookies, url, inCallResponse - 3 bhi hona chahiye.');
+    }
+
+    $('syncStatus').innerHTML = 'Loading...';
+    
+    fetch('/api/session', {
+        method: 'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify(config)
+    }).then(r=>r.json()).then(res=>{
+        if(res.ok) {
+            $('dot').classList.add('live');
+            $('cartName').textContent = res.cartNames || 'Session Saved';
+            $('syncStatus').innerHTML = `✅ Synced Successfully! (${res.cartNames ? 'Cart Loaded' : 'Check Cookies'})`;
+            // Don't hide config box immediately so they can verify
+        } else {
+            alert('Error: ' + (res.error || 'Server Error'));
+            $('syncStatus').innerHTML = `❌ Error: ${res.error}`;
+            $('syncStatus').style.color = '#ef4444';
+        }
+    }).catch(e => {
+        alert('Network Error');
+    });
 }
 
 async function checkSync() {
     try {
         const j = await fetch('/api/session').then(r=>r.json());
-        if(j.live) {
-            $('dot').classList.add('live');
-            $('cartName').textContent = j.cartNames || 'Synced';
-        } else {
-            $('dot').classList.remove('live');
-            $('cartName').textContent = 'No Session';
-        }
+        if(j.live) { $('dot').classList.add('live'); $('cartName').textContent = j.cartNames || 'Synced'; }
+        else { $('dot').classList.remove('live'); $('cartName').textContent = 'No Session'; }
     } catch {}
 }
 
@@ -136,7 +154,7 @@ $('runBtn').onclick = () => {
     const codes = $('codes').value.trim();
     if(!codes) return alert('Coupons dalo pehle');
     $('tbody').innerHTML=''; rowCount=0;
-    $('pauseBtn').style.display='none'; // Hide pause until running
+    $('pauseBtn').style.display='none'; 
     $('stopBtn').disabled=false; $('runBtn').disabled=true;
     
     fetch('/api/check', {
@@ -149,7 +167,6 @@ $('runBtn').onclick = () => {
 };
 
 $('stopBtn').onclick = () => fetch('/api/stop',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({jobId})});
-
 $('pauseBtn').onclick = () => {
     jobPaused = !jobPaused;
     $('pauseBtn').textContent = jobPaused ? "RESUME" : "PAUSE";
@@ -178,8 +195,8 @@ function poll() {
         $('statusText').textContent = j.status.toUpperCase();
 
         if(j.status === 'paused') {
-            $('pauseBtn').style.display='block';
-            $('statusText').textContent = "⏸ PAUSED (Errors detected)";
+            $('pauseBtn').style.display='block'; $('pauseBtn').textContent='RESUME';
+            $('statusText').textContent = "⏸ PAUSED";
         } else {
              $('pauseBtn').style.display='block';
         }
@@ -191,7 +208,6 @@ function poll() {
     });
 }
 
-// Keep Alive
 setInterval(()=>fetch('/api/ping').catch(()=>{}), 20000);
 setInterval(checkSync, 5000);
 checkSync();
