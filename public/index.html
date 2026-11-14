@@ -4,265 +4,197 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Croma Coupon Checker</title>
-<link rel="manifest" href="/manifest.json">
-<meta name="theme-color" content="#0b1220">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{background:#070d18;color:#e5e7eb;font:14px/1.45 Inter,system-ui,-apple-system,sans-serif;padding:12px;max-width:760px;margin:0 auto}
-.card{background:#0f172a;border:1px solid #26364d;border-radius:16px;padding:16px;margin-bottom:12px}
-h1{font-size:21px;letter-spacing:-.03em;color:#f8fafc}
-.sub{color:#94a3b8;font-size:12px;margin-top:3px}
-.sess{display:flex;align-items:center;gap:10px;background:#0f1d2e;border:1px solid #1e4057;border-radius:12px;padding:12px;margin-top:12px}
-.dot{width:9px;height:9px;border-radius:50%;background:#fb7185;flex-shrink:0}
-.dot.live{background:#34d399;box-shadow:0 0 10px #34d399}
-.sess-info{flex:1;min-width:0}
-.cart-name{color:#dbeafe;font-size:12px;font-weight:700;word-break:break-word}
-.badge{font-size:10px;color:#67e8f9;font-weight:800;letter-spacing:.1em}
-.btn-sm{padding:8px 10px;background:#1e293b;border:1px solid #334155;color:#e5e7eb;font-size:11px;font-weight:700;border-radius:8px;cursor:pointer}
-textarea{width:100%;min-height:130px;resize:vertical;background:#080e18;border:1px solid #334155;border-radius:10px;color:#dbeafe;padding:12px;font:12px/1.55 ui-monospace,monospace;outline:0}
-textarea:focus{border-color:#22d3ee}
-.row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;align-items:center}
-button{border:0;border-radius:9px;padding:12px 14px;color:#f8fafc;font-size:12px;font-weight:800;cursor:pointer}
-button:disabled{opacity:.45;cursor:not-allowed}
-.run{flex:1;background:linear-gradient(110deg,#0891b2,#6366f1 55%,#a855f7)}
-.stop{background:#9f1239}
-.load{background:#1e293b;border:1px solid #334155}
-.csv{background:#164e63;border:1px solid #155e75;font-size:10px;padding:9px}
-.csv.g{background:#065f46;border-color:#047857}
-.csv.y{background:#713f12;border-color:#92400e}
-small{color:#64748b;font-size:10px}
-.pill{display:flex;align-items:center;gap:6px;background:#111c2d;border:1px solid #334155;border-radius:9px;padding:9px 11px;font-size:10px;font-weight:700;color:#cbd5e1}
-.pill input[type=number]{width:44px;background:#080e18;border:1px solid #475569;border-radius:5px;color:#fff;text-align:center;font:700 11px monospace}
+body{background:#070d18;color:#e5e7eb;font:14px/1.45 system-ui,sans-serif;padding:12px;max-width:760px;margin:0 auto}
+.card{background:#0f172a;border:1px solid #26364d;border-radius:12px;padding:16px;margin-bottom:12px}
+h1{font-size:20px;color:#f8fafc;margin-bottom:8px}
+.sub{color:#94a3b8;font-size:12px}
+.sess{display:flex;align-items:center;gap:10px;background:#1e293b;border:1px solid #334155;border-radius:10px;padding:12px;margin-top:8px}
+.dot{width:10px;height:10px;border-radius:50%;background:#fb7185}
+.dot.live{background:#34d399;box-shadow:0 0 8px #34d399}
+.btn{padding:10px 15px;border:0;border-radius:8px;color:#fff;font-weight:700;cursor:pointer;margin-right:5px}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.run{background:#3b82f6} .run:hover{background:#2563eb}
+.stop{background:#ef4444} .stop:hover{background:#dc2626}
+.pause{background:#f59e0b} .pause:hover{background:#d97706}
+.resume{background:#10b981} .resume:hover{background:#059669}
+textarea{width:100%;min-height:100px;background:#020617;border:1px solid #334155;border-radius:8px;color:#cbd5e1;padding:10px;font:11px monospace;outline:0}
 .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px}
-.stat{background:#111c2d;border:1px solid #26364d;border-radius:12px;padding:11px}
-.stat b{display:block;font-size:21px;color:#f8fafc}
-.stat span{font-size:9px;color:#94a3b8;font-weight:700}
-.stat.v b{color:#34d399}.stat.n b{color:#fbbf24}.stat.e b{color:#fb7185}
-.bar{height:7px;background:#080e18;border-radius:99px;overflow:hidden;margin:8px 0}
-.bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#22d3ee,#a855f7);transition:width .3s}
-table{width:100%;border-collapse:collapse;font:11px ui-monospace,monospace}
-th{position:sticky;top:0;background:#172235;color:#67e8f9;text-align:left;padding:8px;font-size:9px;text-transform:uppercase}
-td{padding:8px;border-bottom:1px solid #1e293b;color:#cbd5e1;word-break:break-word}
-.ok{color:#34d399;font-weight:900}.na{color:#fbbf24;font-weight:900}.err{color:#fb7185;font-weight:900}
-.valid-list{background:#052e2b;border:1px solid #075e4b;border-radius:10px;padding:10px;color:#d1fae5;font:11px/1.6 ui-monospace,monospace;white-space:pre-wrap;max-height:140px;overflow:auto}
-.pulse{animation:p 1.6s infinite}@keyframes p{50%{opacity:.4}}
-a{color:#67e8f9}
-/* SETUP MODAL */
-.modal-bg{position:fixed;inset:0;background:#020617ee;z-index:99;display:none;align-items:center;justify-content:center;padding:14px}
-.modal-bg.open{display:flex}
-.modal{width:100%;max-width:420px;max-height:92vh;overflow:auto}
-.step{background:#111c2d;border:1px solid #26364d;border-radius:12px;padding:14px;margin-top:10px}
-.step b{color:#67e8f9}
-.step p{color:#94a3b8;font-size:12px;line-height:1.7;margin-top:6px}
-.big{width:100%;margin-top:10px;padding:14px;font-size:14px;background:linear-gradient(110deg,#0891b2,#6366f1);border-radius:11px;color:#fff;font-weight:800}
-.big.g{background:linear-gradient(110deg,#059669,#10b981)}
-.sync-ok{margin-top:12px;padding:14px;background:#064e3b;border:1px solid #10b981;border-radius:11px;color:#a7f3d0;font-size:14px;font-weight:800;display:none;text-align:center}
+.stat{background:#111827;padding:8px;border-radius:8px;text-align:center;border:1px solid #1f2937}
+.stat b{font-size:18px;color:#fff}
+.stat span{font-size:9px;color:#6b7280;display:block}
+table{width:100%;border-collapse:collapse;font-size:11px;margin-top:8px}
+th{background:#1f2937;text-align:left;padding:8px;color:#94a3b8}
+td{padding:8px;border-bottom:1px solid #1f2937}
+.ok{color:#34d399} .na{color:#d97706} .err{color:#f87171}
+.status-bar{padding:8px;background:#1f2937;border-radius:8px;margin-bottom:12px;display:flex;justify-content:space-between;font-size:12px;font-weight:700}
+.json-input{background:#050c1a;color:#7ee787}
+.hidden{display:none}
+#configJson { display: none; }
 </style>
 </head>
 <body>
 
 <div class="stats">
-  <div class="stat"><span>CHECKED</span><b id="s-checked">0</b></div>
-  <div class="stat v"><span>VALID</span><b id="s-valid">0</b></div>
-  <div class="stat n"><span>NA</span><b id="s-na">0</b></div>
-  <div class="stat e"><span>ERR</span><b id="s-err">0</b></div>
+  <div class="stat"><span>Checked</span><b id="s-checked">0</b></div>
+  <div class="stat"><span>Valid</span><b id="s-valid">0</b></div>
+  <div class="stat"><span>NA</span><b id="s-na">0</b></div>
+  <div class="stat"><span>Err</span><b id="s-err">0</b></div>
 </div>
 
 <div class="card">
-  <h1>Coupon Checker</h1>
-  <p class="sub">Server pe background check &middot; <span class="pulse" style="color:#34d399">keep-alive ON</span></p>
-  <div class="sess"><i class="dot" id="dot"></i>
-    <div class="sess-info"><div class="badge">CROMA SESSION</div><div class="cart-name" id="cart">Checking...</div></div>
-    <button class="btn-sm" onclick="pingSession()">Refresh</button>
-    <button class="btn-sm" onclick="openSetup()">Setup</button>
+  <div style="display:flex;justify-content:space-between;align-items:center">
+      <h1>Croma Checker</h1>
+      <div class="sess">
+          <i class="dot" id="dot"></i>
+          <span style="font-size:11px;color:#cbd5e1" id="cartName">No Session</span>
+      </div>
   </div>
-</div>
-
-<div class="card">
-  <textarea id="codes" placeholder="WELCOME10&#10;SAVE500&#10;FIRSTORDER"></textarea>
-  <div class="row">
-    <button class="run" id="run">START</button>
-    <button class="stop" id="stop" disabled>STOP</button>
-    <button class="load" id="load">TXT<input type="file" id="file" accept=".txt,text/plain" hidden></button>
-  </div>
-  <div class="row">
-    <label class="pill">Parallel <input type="number" id="conc" min="1" max="50" value="25"></label>
-    <small>Beep: <input type="checkbox" id="beepOn" checked></small>
-    <small style="margin-left:auto" id="cnt">0 codes</small>
+  
+  <div class="sess" style="background:#0f172a;margin-top:8px">
+      <button class="btn" onclick="loadConfig()">Load Session Config</button>
+      <textarea id="configJson" placeholder='Paste JSON here:\n{\n  "cookies": [...], \n  "url": "https://.../cart-modification...", \n  "inCallResponse": "..."\n}'></textarea>
+      <div style="margin-top:5px;font-size:10px;color:#94a3b8">Format: Check console or Network tab for 'url' & 'inCallResponse'</div>
+      <div id="syncStatus" style="margin-top:5px;font-weight:700;color:#34d399;display:none">✅ Session Saved! Ready to Check.</div>
   </div>
 </div>
 
 <div class="card">
-  <div class="row" style="justify-content:space-between"><b id="statusLine" style="font-size:12px">Ready</b><b id="pct" style="font-size:12px">0%</b></div>
-  <div class="bar"><i id="barFill"></i></div>
-  <div class="row" style="margin-top:6px">
-    <button class="csv" id="csvAll">All CSV</button>
-    <button class="csv g" id="csvValid">Valid CSV</button>
-    <button class="csv y" id="csvNA">NA CSV</button>
-  </div>
-</div>
-
-<div class="card"><b style="color:#6ee7b7;font-size:12px">VALID COUPONS (<span id="vCount">0</span>)</b>
-  <div class="valid-list" id="validList" style="margin-top:8px">Yahan valid coupons dikhenge...</div></div>
-
-<div class="card"><b style="font-size:12px">ALL RESULTS</b>
-  <div style="max-height:320px;overflow:auto;margin-top:8px">
-  <table><thead><tr><th>#</th><th>Coupon</th><th>Result</th><th>Dis.</th><th>Message</th></tr></thead><tbody id="tbody"></tbody></table></div></div>
-
-<div class="card"><details><summary style="color:#94a3b8;font-size:11px;cursor:pointer">Log</summary>
-<pre id="log" style="font:10px/1.5 monospace;color:#64748b;white-space:pre-wrap;margin-top:8px;max-height:150px;overflow:auto"></pre></details></div>
-
-<!-- SETUP MODAL -->
-<div class="modal-bg" id="setupModal">
-  <div class="card modal">
-    <h1>Session Setup</h1>
-    <p class="sub" id="mState" style="color:#fbbf24">Session nahi hai — neeche steps karo</p>
-
-    <div class="step"><b>STEP 1 — Ek baar bookmark banao (sirf pehli baar)</b>
-      <p>Neeche button dabao, code copy ho jayega. Fir Chrome me: croma.com pe koi bhi page kholo &rarr; <b>&#8942; &rarr; Bookmarks &rarr; purana "Sync Croma" delete karo</b> &rarr; croma.com pe <b>&#11088; star</b> dabake bookmark banao &rarr; Bookmarks me uska <b>&#8942; &rarr; Edit &rarr; URL me paste</b> karo, naam "Sync Croma" rakho.</p>
-      <button class="big" onclick="copyBM()">1. COPY BOOKMARKLET CODE</button>
-      <button class="big" style="background:#1e293b;border:1px solid #334155" onclick="window.open('https://www.croma.com/cart','_blank')">2. OPEN CROMA CART (naye tab me)</button>
+    <h1>Coupons</h1>
+    <textarea id="codes" placeholder="CODE1&#10;CODE2&#10;SAVE500"></textarea>
+    <div style="margin-top:10px;display:flex;gap:5px;align-items:center">
+        <button class="btn run" id="runBtn">START</button>
+        <button class="btn pause" id="pauseBtn">PAUSE</button>
+        <button class="btn stop" id="stopBtn" disabled>STOP</button>
+        <div style="margin-left:auto;font-size:11px">
+            <input type="checkbox" id="chkPause"> <label for="chkPause">Auto Pause on Error (3+)</label>
+        </div>
     </div>
-
-    <div class="step"><b>STEP 2 — Sync karo</b>
-      <p>Croma cart khula hai? (login + product cart me + page poori load) &rarr; Bookmarks me <b>"Sync Croma" tap</b> karo. Popup me "Session synced!" aayega. Wapas isi app me aao — neeche green dikh jayega, khud-ba-khud!</p>
-    </div>
-
-    <div class="sync-ok" id="syncOk">&#10004; SESSION SYNCED! Ab START maar sakte ho. Modal band karo.</div>
-    <button class="big g" onclick="closeSetup()">DONE / BAND KARO</button>
-  </div>
 </div>
+
+<div class="status-bar">
+    <span id="statusText">Ready</span>
+    <span id="progressText">0%</span>
+</div>
+
+<div class="card">
+    <table>
+        <thead><tr><th>#</th><th>Coupon</th><th>Result</th><th>Value</th></tr></thead>
+        <tbody id="tbody"></tbody>
+    </table>
+</div>
+
+<div class="card"><details><summary style="color:#94a3b8;cursor:pointer">Log</summary><pre id="log" style="font-size:10px;color:#6b7280;max-height:100px;overflow:auto;">...</pre></details></div>
 
 <script>
-let jobId=null, jobDone=true, rowCount=0, allResults=[], audio, watchTimer=null;
 const $=id=>document.getElementById(id);
-const ORIGIN = location.origin;
+let jobId=null, jobDone=true, rowCount=0, jobPaused=false;
 
-/* ================= SETUP ================= */
-function openSetup(){ $('setupModal').classList.add('open'); checkSync(); startWatch(); }
-function closeSetup(){ $('setupModal').classList.remove('open'); stopWatch(); pingSession(); }
+// Load previous codes
+$('codes').value = localStorage.getItem('cc_codes') || '';
 
-function makeBM(){
-  return "javascript:(function(){var t=null,cartBase=null,cartH={},pin='',cartSnap=null;var o1=XMLHttpRequest.prototype.open,o2=XMLHttpRequest.prototype.setRequestHeader,o3=XMLHttpRequest.prototype.send;XMLHttpRequest.prototype.open=function(m,u){this.__m={m:m,u:String(u),h:{}};return o1.apply(this,arguments)};XMLHttpRequest.prototype.setRequestHeader=function(n,v){if(this.__m)this.__m.h[n]=v;return o2.apply(this,arguments)};XMLHttpRequest.prototype.send=function(bod){var x=this;if(x.__m){var u=x.__m.u;var mt=u.match(/^(https?:\\/\\/api\\.croma\\.com\\/useraccount\\/allchannels\\/v2\\/users\\/[^\\/?]+\\/carts\\/[^\\/?]+)/i);if(mt){cartBase=mt[1];cartH=x.__m.h;var pm=u.match(/pincode(\\d{6})/i);if(pm)pin=pm[1]}try{if(u.indexOf('/cart-modification')>-1&&JSON.parse(bod||'{}').toBeAppliedCouponsList){t={url:u,method:x.__m.m,headers:x.__m.h}}}catch(e){}}x.addEventListener('load',function(){if(x.__m&&String(x.__m.u).indexOf('/carts/')>-1){try{var d=JSON.parse(x.responseText);if(d&&typeof d==='object'&&Array.isArray(d.entries))cartSnap=d}catch(e){}}});return o3.apply(this,arguments)};function fi(){return document.querySelector('input.Coupon-input')||document.querySelector('input[placeholder*=\"oupon\" i]')||document.querySelector('input[name*=\"oupon\" i]')}function fb(i){return document.querySelector('button.coupon-apply-button')||Array.prototype.slice.call(document.querySelectorAll('button')).find(function(b){return /apply/i.test(b.textContent)&&b.offsetParent})}function fe(){return document.querySelector('button.apply-coupon-button')||Array.prototype.slice.call(document.querySelectorAll('button,a')).find(function(b){var s=(b.textContent||'');return /coupon/i.test(s)&&/apply|have|add|view/i.test(s)&&b.offsetParent})}var ex=fe();if(ex){try{ex.click()}catch(e){}}var t0=Date.now();function finish(){if(!t&&cartBase&&Object.keys(cartH).length){var sp=(String(localStorage.getItem('3hrPincode')||'').match(/\\d{6}/)||[])[0]||'';var p=pin||sp;t={url:cartBase+'/cart-modification?forceRecalculate=true&fields=FULL&refreshCart=false'+(p?'&pincode'+p:''),method:'POST',headers:cartH}}if(!t){alert('Coupon form & cart request dono nahi mile. Page poori load hone do, coupon section kholo, dobara tap karo');return}fetch('"+ORIGIN+"/api/session',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({template:t,cart:cartSnap,inCallResponse:localStorage.getItem('InCallResponse'),cookie:document.cookie})}).then(function(r){return r.json()}).then(function(j){alert(j.ok?'Session synced! Ab app me wapas jao.':'Fail: '+(j.error||''))}).catch(function(e){alert('Sync error: '+e)})}var w=setInterval(function(){var inp=fi();if(inp){clearInterval(w);var btn=fb(inp);if(!btn){finish();return}var st=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value').set;st.call(inp,'SYNC'+Math.floor(Math.random()*900+100));inp.dispatchEvent(new Event('input',{bubbles:true}));inp.dispatchEvent(new Event('change',{bubbles:true}));btn.click();setTimeout(finish,3000)}else if(Date.now()-t0>15000){clearInterval(w);finish()}},250)})()";
-}
-function copyBM(){
-  const code = makeBM();
-  if(navigator.clipboard && navigator.clipboard.writeText){
-    navigator.clipboard.writeText(code).then(()=>alert('Copy ho gaya! Ab bookmark ke URL me paste karo (Step 1 ke Instructions)')).catch(()=>fallbackCopy(code));
-  } else fallbackCopy(code);
-}
-function fallbackCopy(code){
-  const ta=document.createElement('textarea'); ta.value=code; document.body.appendChild(ta);
-  ta.select(); document.execCommand('copy'); ta.remove();
-  alert('Copy ho gaya! Ab bookmark ke URL me paste karo (Step 1 ke Instructions)');
-}
-function checkSync(){
-  fetch('/api/session').then(r=>r.json()).then(j=>{
-    if(j.live){
-      $('mState').textContent='Session LIVE hai — sab ready!';
-      $('mState').style.color='#34d399';
-      $('syncOk').style.display='block';
-    } else {
-      $('mState').textContent='Session nahi hai — neeche steps karo';
-      $('mState').style.color='#fbbf24';
-      $('syncOk').style.display='none';
-    }
-  }).catch(()=>{});
-}
-function startWatch(){ stopWatch(); watchTimer=setInterval(checkSync, 2000); }
-function stopWatch(){ if(watchTimer) clearInterval(watchTimer); watchTimer=null; }
-
-/* ================= STEALTH KEEP-ALIVE ================= */
-let lastActivity = Date.now();
-let lastPing = 0;
-['touchstart','touchmove','click','scroll','keydown','input'].forEach(ev=>{
-  document.addEventListener(ev, ()=>{ lastActivity = Date.now(); }, {passive:true});
-});
-document.addEventListener('visibilitychange', ()=>{ lastActivity = Date.now(); if(!document.hidden && $('setupModal').classList.contains('open')) checkSync(); });
-setInterval(()=>{
-  const now = Date.now();
-  if(now - lastPing >= 20000 && (jobDone ? (document.hidden && now-lastActivity > 20000) : true)){
-    fetch('/api/ping').catch(()=>{});
-    lastPing = now;
-  }
-}, 5000);
-
-/* ================= SESSION ================= */
-function pingSession(){
-  fetch('/api/session').then(r=>r.json()).then(j=>{
-    $('dot').classList.toggle('live',!!j.live);
-    $('cart').textContent = j.live ? (j.cart + (j.pincode?` | PIN ${j.pincode}`:'')) : 'Session nahi hai — Setup dabao';
-  }).catch(()=>{ $('cart').textContent='Server connect nahi hua (pehli baar slow)'; $('dot').classList.remove('live'); });
+// --- SESSION HANDLING ---
+function loadConfig() {
+    const txt = $('configJson').value;
+    if(!txt) { alert('Koi JSON nahi hai'); return; }
+    try {
+        const config = JSON.parse(txt);
+        fetch('/api/session', {
+            method: 'POST',
+            headers:{'Content-Type':'application/json'},
+            body: JSON.stringify(config)
+        }).then(r=>r.json()).then(res=>{
+            if(res.ok) {
+                $('syncStatus').style.display='block';
+                $('syncStatus').innerHTML = `✅ Saved! | Cart: ${res.cartNames || 'Unknown'}`;
+                $('dot').classList.add('live');
+                $('cartName').textContent = res.cartNames || 'Session Active';
+                alert('Session Save ho gaya!');
+            } else {
+                alert('Error: ' + res.error);
+            }
+        });
+    } catch(e) { alert('JSON format ghalat hai'); }
 }
 
-/* ================= MAIN ================= */
-function beep(){ if(!$('beepOn').checked)return; try{ audio=audio||new (window.AudioContext||window.webkitAudioContext)();
-  const o=audio.createOscillator(),g=audio.createGain(); o.type='sine';o.frequency.value=880;
-  g.gain.setValueAtTime(.12,audio.currentTime); g.gain.exponentialRampToValueAtTime(.001,audio.currentTime+.1);
-  o.connect(g);g.connect(audio.destination);o.start();o.stop(audio.currentTime+.11);}catch{} }
+async function checkSync() {
+    try {
+        const j = await fetch('/api/session').then(r=>r.json());
+        if(j.live) {
+            $('dot').classList.add('live');
+            $('cartName').textContent = j.cartNames || 'Synced';
+        } else {
+            $('dot').classList.remove('live');
+            $('cartName').textContent = 'No Session';
+        }
+    } catch {}
+}
 
-function updCount(){ const n=[...new Set($('codes').value.split(/[\n,;\t]+/).map(c=>c.trim().toUpperCase()).filter(Boolean))].length; $('cnt').textContent=n+' codes'; }
-$('codes').oninput=()=>{localStorage.setItem('cc_codes',$('codes').value);updCount()};
-$('codes').value=localStorage.getItem('cc_codes')||'';
-$('conc').value=localStorage.getItem('cc_conc')||25;
-updCount();
-
-$('load').onclick=()=>$('file').click();
-$('file').onchange=async()=>{ const f=$('file').files[0]; if(!f)return;
-  try{ $('codes').value=await f.text(); localStorage.setItem('cc_codes',$('codes').value); updCount(); }catch{} $('file').value=''; };
-
-$('run').onclick=()=>{
-  const codes=$('codes').value.trim();
-  if(!codes){ $('statusLine').textContent='Pehle coupons paste / TXT load karo'; return; }
-  $('tbody').innerHTML=''; rowCount=0; allResults=[]; $('validList').textContent=''; $('vCount').textContent='0';
-  ['s-checked','s-valid','s-na','s-err'].forEach(i=>$(i).textContent='0');
-  fetch('/api/check',{method:'POST',headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({codes,concurrency:Number($('conc').value)||25})})
-  .then(r=>r.json()).then(j=>{
-    if(!j.ok){ $('statusLine').textContent=j.error; return; }
-    jobId=j.jobId; jobDone=false; $('run').disabled=true; $('stop').disabled=false;
-    localStorage.setItem('cc_conc',$('conc').value); poll();
-  });
+// --- CHECKER LOGIC ---
+$('runBtn').onclick = () => {
+    const codes = $('codes').value.trim();
+    if(!codes) return alert('Coupons dalo pehle');
+    $('tbody').innerHTML=''; rowCount=0;
+    $('pauseBtn').style.display='none'; // Hide pause until running
+    $('stopBtn').disabled=false; $('runBtn').disabled=true;
+    
+    fetch('/api/check', {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({codes, pauseOnError: $('chkPause').checked})
+    }).then(r=>r.json()).then(j=>{
+        if(!j.ok) alert(j.error);
+        else { jobId=j.jobId; jobDone=false; poll(); }
+    });
 };
-$('stop').onclick=()=>{ fetch('/api/stop',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({jobId})}); };
 
-function addRow(i,r){ const tr=document.createElement('tr');
-  tr.innerHTML=`<td>${i}</td><td>${r.code}</td><td class="${r.error?'err':r.valid?'ok':'na'}">${r.error?'ERROR':r.valid?'VALID':'NOT APPLICABLE'}</td><td>Rs. ${(r.discount||0)}</td><td>${(r.error||r.message||'').replace(/</g,'&lt;')}</td>`;
-  $('tbody').appendChild(tr); }
+$('stopBtn').onclick = () => fetch('/api/stop',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({jobId})});
 
-function poll(){
-  if(!jobId||jobDone) return;
-  fetch(`/api/result?jobId=${jobId}&from=${rowCount}`)
-  .then(r=>r.json()).then(j=>{
-    if(!j.ok){ $('statusLine').textContent=j.error; return; }
-    if(j.results){ j.results.forEach(r=>{ allResults.push(r); addRow(++rowCount,r); }); }
-    $('s-checked').textContent=j.counts.checked; $('s-valid').textContent=j.counts.valid;
-    $('s-na').textContent=j.counts.na; $('s-err').textContent=j.counts.errors;
-    $('vCount').textContent=j.counts.valid;
-    if(j.valid && j.valid.length) $('validList').textContent=j.valid.join('\n');
-    if(j.newValidBeep) beep();
-    $('log').textContent=(j.log||[]).join('\n');
-    const p=Math.round(j.counts.checked/j.total*100)||0;
-    $('barFill').style.width=p+'%'; $('pct').textContent=p+'%';
-    if(j.status==='running'||j.status==='stopping'){ $('statusLine').textContent=`Checking... ${j.counts.checked}/${j.total}`; setTimeout(poll,1200); }
-    else{ jobDone=true; $('run').disabled=false; $('stop').disabled=true;
-      $('statusLine').textContent=`${j.status.toUpperCase()} — ${j.counts.valid} valid, ${j.counts.na} NA, ${j.counts.errors} errors`;
-      if(j.error) $('statusLine').textContent+=' | '+j.error; }
-  }).catch(()=>{ if(!jobDone) setTimeout(poll,3000); });
+$('pauseBtn').onclick = () => {
+    jobPaused = !jobPaused;
+    $('pauseBtn').textContent = jobPaused ? "RESUME" : "PAUSE";
+    if(!jobPaused) fetch('/api/resume', {method:'POST', headers:{'Content-Type':'application/json'},body:JSON.stringify({jobId})});
+};
+
+function poll() {
+    if(!jobId || jobDone) return;
+    fetch(`/api/result?jobId=${jobId}&from=${rowCount}`)
+    .then(r=>r.json()).then(j=>{
+        if(!j.ok) return;
+        if(j.results) j.results.forEach(r => {
+            const tr=document.createElement('tr');
+            const cls = r.error ? 'err' : (r.valid ? 'ok' : 'na');
+            tr.innerHTML=`<td>${++rowCount}</td><td>${r.code}</td><td class="${cls}">${r.valid?'VALID':(r.error?'ERR':'NA')}</td><td>Rs. ${r.discount||0}</td>`;
+            $('tbody').appendChild(tr);
+        });
+        $('s-checked').textContent = j.counts.checked;
+        $('s-valid').textContent = j.counts.valid;
+        $('s-na').textContent = j.counts.na;
+        $('s-err').textContent = j.counts.errors;
+        $('log').innerText = (j.log||[]).join('\n');
+        
+        const pct = Math.round(j.counts.checked/j.total*100) || 0;
+        $('progressText').textContent = pct + '%';
+        $('statusText').textContent = j.status.toUpperCase();
+
+        if(j.status === 'paused') {
+            $('pauseBtn').style.display='block';
+            $('statusText').textContent = "⏸ PAUSED (Errors detected)";
+        } else {
+             $('pauseBtn').style.display='block';
+        }
+
+        if(j.status==='running'||j.status==='stopping'){ setTimeout(poll, 800); }
+        else { jobDone=true; $('runBtn').disabled=false; $('stopBtn').disabled=true; 
+              $('statusText').textContent = `🏁 ${j.status.toUpperCase()}`;
+        }
+    });
 }
 
-function dl(rows,name){
-  if(!rows.length) return;
-  const csv=[['Coupon','Result','Discount','Message'],...rows.map(r=>[r.code,r.error?'ERROR':r.valid?'VALID':'NOT APPLICABLE',r.discount||0,r.error||r.message||''])]
-    .map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
-  const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'})); a.download=name; a.click();
-}
-$('csvAll').onclick=()=>dl(allResults,'all_results.csv');
-$('csvValid').onclick=()=>dl(allResults.filter(r=>r.valid),'valid_coupons.csv');
-$('csvNA').onclick=()=>dl(allResults.filter(r=>!r.valid&&!r.error),'not_applicable.csv');
-
-pingSession();
-if('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js');
+// Keep Alive
+setInterval(()=>fetch('/api/ping').catch(()=>{}), 20000);
+setInterval(checkSync, 5000);
+checkSync();
 </script>
 </body>
 </html>
